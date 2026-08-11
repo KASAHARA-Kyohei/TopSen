@@ -18,6 +18,14 @@ struct MemoView: View {
             .padding(.bottom, 8)
             .accessibilityLabel("メモ")
             .accessibilityIdentifier("memoEditor")
-            .background(.ultraThinMaterial.opacity(0.78))
+            .glassEffect(
+                .clear.interactive(),
+                in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+            )
+            .overlay {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(Color.white.opacity(0.14), lineWidth: 0.6)
+                    .allowsHitTesting(false)
+            }
     }
 }
