@@ -76,6 +76,23 @@ struct TopSenTests {
         #expect(restored == NSRect(x: 100, y: 100, width: 240, height: 160))
     }
 
+    @Test
+    func memoVisibilityCanBeToggled() {
+        let (defaults, domain) = makeDefaults()
+        defer { defaults.removePersistentDomain(forName: domain) }
+
+        let controller = MemoPanelController(
+            memoStore: MemoStore(defaults: defaults, key: "memo"),
+            windowStateStore: WindowStateStore(defaults: defaults, key: "frame")
+        )
+
+        #expect(!controller.isMemoVisible)
+        controller.toggleVisibility()
+        #expect(controller.isMemoVisible)
+        controller.toggleVisibility()
+        #expect(!controller.isMemoVisible)
+    }
+
     private func makeDefaults() -> (UserDefaults, String) {
         let domain = "TopSenTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: domain)!

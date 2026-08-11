@@ -14,6 +14,10 @@ final class MemoPanelController: NSObject, NSWindowDelegate {
     private var screenParametersObserver: NSObjectProtocol?
     private var shouldBeVisible = false
 
+    var isMemoVisible: Bool {
+        shouldBeVisible
+    }
+
     init(memoStore: MemoStore, windowStateStore: WindowStateStore) {
         self.memoStore = memoStore
         self.windowStateStore = windowStateStore
@@ -57,6 +61,14 @@ final class MemoPanelController: NSObject, NSWindowDelegate {
         shouldBeVisible = false
         saveWindowState()
         panel.orderOut(nil)
+    }
+
+    func toggleVisibility() {
+        if isMemoVisible {
+            hide()
+        } else {
+            show()
+        }
     }
 
     func saveWindowState() {

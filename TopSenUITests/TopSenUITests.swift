@@ -31,11 +31,37 @@ final class TopSenUITests: XCTestCase {
     }
 
     @MainActor
+    func testGlobalShortcutTogglesMemoVisibility() throws {
+        let app = XCUIApplication()
+        app.launchEnvironment["TOPSEN_USER_DEFAULTS_SUITE"] = "TopSenUITests.\(UUID().uuidString)"
+        app.launch()
+
+        let editor = app.textViews["memoEditor"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 5))
+
+        app.typeKey("m", modifierFlags: [.command, .shift])
+        XCTAssertTrue(waitForExistence(editor, expected: false, timeout: 5))
+
+        app.typeKey("m", modifierFlags: [.command, .shift])
+        XCTAssertTrue(editor.waitForExistence(timeout: 5))
+    }
+
+    @MainActor
     func testLaunchPerformance() throws {
         measure(metrics: [XCTApplicationLaunchMetric()]) {
             let app = XCUIApplication()
             app.launchEnvironment["TOPSEN_USER_DEFAULTS_SUITE"] = "TopSenUITests.Performance"
             app.launch()
         }
+    }
+
+    private func waitForExistence(
+        _ element: XCUIElement,
+        expected: Bool,
+        timeout: TimeInterval
+    ) -> Bool {
+        let predicate = NSPredicate(format: "exists == %@", NSNumber(value: expected))
+        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
+        return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
     }
 }

@@ -9,6 +9,7 @@ import AppKit
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var panelController: MemoPanelController?
     private var statusItem: NSStatusItem?
+    private var globalHotKeyController: GlobalHotKeyController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApplication.shared.setActivationPolicy(.accessory)
@@ -24,9 +25,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panelController = controller
         configureStatusItem()
         controller.show()
+        configureGlobalHotKey()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        globalHotKeyController = nil
         panelController?.saveWindowState()
     }
 
@@ -40,6 +43,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func hideMemo() {
         panelController?.hide()
+    }
+
+    @objc private func toggleMemoVisibility() {
+        panelController?.toggleVisibility()
     }
 
     @objc private func confirmAndClearMemo() {
@@ -63,6 +70,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         let menu = NSMenu()
+        let toggleItem = menuItem(
+            title: "メモ表示を切り替え",
+            action: #selector(toggleMemoVisibility),
+            keyEquivalent: "m"
+        )
+        toggleItem.keyEquivalentModifierMask = [.command, .shift]
+        menu.addItem(toggleItem)
+        menu.addItem(.separator())
         menu.addItem(menuItem(title: "メモを表示", action: #selector(showMemo)))
         menu.addItem(menuItem(title: "メモを非表示", action: #selector(hideMemo)))
         menu.addItem(.separator())
@@ -74,10 +89,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = item
     }
 
-    private func menuItem(title: String, action: Selector) -> NSMenuItem {
-        let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
+    private func menuItem(
+        title: String,
+        action: Selector,
+        keyEquivalent: String = ""
+    ) -> NSMenuItem {
+        let item = NSMenuItem(
+            title: title,
+            action: action,
+            keyEquivalent: keyEquivalent
+        )
         item.target = self
         return item
+    }
+
+    private func configureGlobalHotKey() {
+        do {
+            globalHotKeyController = try GlobalHotKeyController { [weak self] in
+                self?.panelController?.toggleVisibility()
+            }
+        } catch {
+            let alert = NSAlert()
+            alert.alertStyle = .warning
+            alert.messageText = "ショートカットを登録できませんでした"
+            alert.informativeText = error.localizedDescription
+            alert.addButton(withTitle: "OK")
+            NSApplication.shared.activate(ignoringOtherApps: true)
+            alert.runModal()
+        }
     }
 
     private func persistenceDefaults() -> UserDefaults {
