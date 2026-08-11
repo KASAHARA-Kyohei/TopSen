@@ -18,6 +18,6 @@ struct MemoView: View {
             .padding(.bottom, 8)
             .accessibilityLabel("メモ")
             .accessibilityIdentifier("memoEditor")
-            .background(.ultraThinMaterial)
+            .background(.ultraThinMaterial.opacity(0.78))
     }
 }
